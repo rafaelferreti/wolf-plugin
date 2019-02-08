@@ -174,6 +174,8 @@
 				var wolf_id = $(element).data('wolf-id');
 				$('[data-wolf-error="'+wolf_id+'"]').remove();
 
+				$(element).removeClass('wolf-input-error');
+
 				if (error_list.length > 0 && (is_required || value != '')) {
 					//And now, (if necessary) create new errors messages
 					var html_errors = '<div class="wolf-errors" data-wolf-error="'+wolf_id+'"><ul>';

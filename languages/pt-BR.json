@@ -2,5 +2,8 @@
 	"required" : "O campo :field é obrigatório.",
 	"max" : "O campo :field não pode conter mais que :value caracteres.",
 	"min" : "O campo :field não pode conter menos que :value caracteres.",
-	"email" : "O campo :field não é um e-mail válido."
+	"email" : "O campo :field é inválido.",
+	"phone" : "O campo :field é inválido.",
+	"numeric" : "O campo :field deve ser um número.",
+	"integer" : "O campo :field deve ser um número inteiro."
 }
