@@ -4,8 +4,18 @@
 		$(this).submit(function() {
 			var has_errors = false;
 
-			$('.wolf-errors').each(function(){
-				has_errors = true;
+			$('[data-wolf-rule]').each(function() {
+				var element = $(this);
+				var name    = $(this).attr('name');
+
+				var field   = $(this).data('wolf-field');
+				field       = (typeof field !== 'undefined') ? field : name;
+
+				var rule    = $(this).data('wolf-rule');
+				var value   = $(this).val();
+
+				if (!howl(element, name, field, rule, value))
+					has_errors = true;
 			});
 
 			if (has_errors)
@@ -16,7 +26,15 @@
 		var wolf = 0;
 
 		$('[data-wolf-rule]').each(function(){
-			$(this).attr('data-wolf-id', wolf);
+			var element = $(this);
+
+			if (element.attr('type') == 'radio' || element.attr('type') == 'checkbox') {
+				var name = $(element).attr('name');
+				$('input[name="'+name+'"]').attr('data-wolf-id', wolf);
+			} else {
+				$(element).attr('data-wolf-id', wolf);
+			}
+
 			wolf ++;
 		});
 
@@ -24,18 +42,23 @@
 			showAllErrors: true
 		}, options);
 
-		function requiredValidade(value) {
+		function requiredValidate(value) {
 			if (value == '')
 				return false;
 
 			return true;
 		}
 
-		function minValidate(value, min) {
-			if (value.length < min) {
-				//console.log('false');
+		function requiredValidateRadioOrCheckbox(name) {
+			if (!$('input[name="'+name+'"]').is(':checked'))
 				return false;
-			}
+			
+			return true;
+		}
+
+		function minValidate(value, min) {
+			if (value.length < min)
+				return false;
 
 			return true;
 		}
@@ -52,6 +75,28 @@
     		return re.test(String(value).toLowerCase());
 		}
 
+		function phoneValidate(value) {
+			if (value.indexOf('0000') != -1 || value.indexOf('1111') != -1 || value.indexOf('2222') != -1 ||
+				value.indexOf('3333') != -1 || value.indexOf('4444') != -1 || value.indexOf('5555') != -1 ||
+				value.indexOf('6666') != -1 || value.indexOf('7777') != -1 || value.indexOf('8888') != -1 ||
+				value.indexOf('9999') != -1)
+					return false;
+
+			return true;
+		}
+
+		function integerValidate(value) {
+			if (!$.isNumeric(value))
+				return false;
+
+			value = parseInt(value);
+
+			if (!Number.isInteger(value))
+				return false;
+
+			return true;
+		}
+
 		var errors_message = [];
 
 		//get messages text
@@ -63,31 +108,30 @@
 		    },
 		});
 
-		$('[data-wolf-rule]').focusout(function(){
-
-			var element = $(this);
-			var name    = $(this).attr('name');
-
-			var field   = $(this).data('wolf-field');
-			field       = (typeof field !== 'undefined') ? field : name;
-
-			var rule    = $(this).data('wolf-rule');
-			var value   = $(this).val();
-
-			var min;
-			var max;
-
+		//howl is responsible for validate and show errors message
+		function howl(element, name, field, rule, value) {
 			if (typeof rule !== 'undefined') {
 				rule = rule.split('|');
 
 				var error_list = [];
 
+				var is_required = false;
+
 				$.each(rule, function(key, type) {
 					
 					if (type == 'required') {
-						if (!requiredValidade(value)) {
+						//verify required in radios
+						if (element.attr('type') == 'radio' || element.attr('type') == 'checkbox') {
+							if (!requiredValidateRadioOrCheckbox(name)) {
+								error_list.push('required');
+							}	
+						}
+
+						if (!requiredValidate(value)) {
 							error_list.push('required');
 						}
+
+						is_required = true;
 					}
 
 					if (type.indexOf('min') != -1) {
@@ -114,13 +158,23 @@
 							error_list.push('email');
 						}
 					}
+
+					if (type == 'phone') {
+						if (!phoneValidate(value))
+							error_list.push('phone');
+					}
+
+					if (type == 'integer') {
+						if (!integerValidate(value))
+							error_list.push('integer');
+					}
 				});
 
 				//First, remove messages already sent
 				var wolf_id = $(element).data('wolf-id');
 				$('[data-wolf-error="'+wolf_id+'"]').remove();
 
-				if (error_list.length > 0) {
+				if (error_list.length > 0 && (is_required || value != '')) {
 					//And now, (if necessary) create new errors messages
 					var html_errors = '<div class="wolf-errors" data-wolf-error="'+wolf_id+'"><ul>';
 					has_errors = true;
@@ -142,11 +196,45 @@
 
 					html_errors += '</ul></div>';
 
-					if (has_errors)
+					if (has_errors) {
+						if (element.attr('type') == 'radio' || element.attr('type') == 'checkbox') {
+							var name = $(element).attr('name');
+
+							var last_radio;
+
+							$('input[name="'+name+'"]').each(function(){
+								last_radio = $(this);
+
+								if (last_radio.next().is('label'))
+									last_radio = last_radio.next();
+							});
+
+							element = last_radio;
+
+						} 
+
 						$(element).after(html_errors);
+					}
+
+					return false;
 
 				}
+
+				return true;
 			}
-		})
+		}
+
+		$('[data-wolf-rule]').focusout(function() {
+			var element = $(this);
+			var name    = $(this).attr('name');
+
+			var field   = $(this).data('wolf-field');
+			field       = (typeof field !== 'undefined') ? field : name;
+
+			var rule    = $(this).data('wolf-rule');
+			var value   = $(this).val();
+
+			howl(element, name, field, rule, value);
+		});
 	}
 }(jQuery));
