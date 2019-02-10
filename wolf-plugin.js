@@ -5,16 +5,7 @@
 			var has_errors = false;
 
 			$('[data-wolf-rule]').each(function() {
-				var element = $(this);
-				var name    = $(this).attr('name');
-
-				var field   = $(this).data('wolf-field');
-				field       = (typeof field !== 'undefined') ? field : name;
-
-				var rule    = $(this).data('wolf-rule');
-				var value   = $(this).val();
-
-				if (!howl(element, name, field, rule, value))
+				if (!howl($(this)))
 					has_errors = true;
 			});
 
@@ -97,6 +88,43 @@
 			return true;
 		}
 
+		function cpfValidate(value) {
+			value = value.replace(/\./g, '');
+			value = value.replace(/-/g, '');
+
+			var plus = 0;
+			var rest;
+
+			if (value == "00000000000" || value == '') 
+				return false;
+			     
+			for (i=1; i<=9; i++) 
+			  	plus = plus + parseInt(value.substring(i-1, i)) * (11 - i);
+
+			rest = (plus * 10) % 11;
+			   
+			if ((rest == 10) || (rest == 11))  
+			  	rest = 0;
+			  
+			if (rest != parseInt(value.substring(9, 10)) ) 
+			  	return false;
+			   
+			plus = 0;
+			    
+			for (i = 1; i <= 10; i++) 
+			  	plus = plus + parseInt(value.substring(i-1, i)) * (12 - i);
+
+			rest = (plus * 10) % 11;
+			   
+			if ((rest == 10) || (rest == 11))  
+			  	rest = 0;
+
+			if (rest != parseInt(value.substring(10, 11) ) ) 
+			  	return false;
+
+			return true;
+		}
+
 		var errors_message = [];
 
 		//get messages text
@@ -109,7 +137,15 @@
 		});
 
 		//howl is responsible for validate and show errors message
-		function howl(element, name, field, rule, value) {
+		function howl(element) {
+			var name    = $(element).attr('name');
+
+			var field   = $(element).data('wolf-field');
+			field       = (typeof field !== 'undefined') ? field : name;
+
+			var rule    = $(element).data('wolf-rule');
+			var value   = $(element).val();
+
 			if (typeof rule !== 'undefined') {
 				rule = rule.split('|');
 
@@ -167,6 +203,11 @@
 					if (type == 'integer') {
 						if (!integerValidate(value))
 							error_list.push('integer');
+					}
+
+					if (type == 'cpf') {
+						if (!cpfValidate(value))
+							error_list.push('cpf');
 					}
 				});
 
@@ -227,16 +268,7 @@
 		}
 
 		$('[data-wolf-rule]').focusout(function() {
-			var element = $(this);
-			var name    = $(this).attr('name');
-
-			var field   = $(this).data('wolf-field');
-			field       = (typeof field !== 'undefined') ? field : name;
-
-			var rule    = $(this).data('wolf-rule');
-			var value   = $(this).val();
-
-			howl(element, name, field, rule, value);
+			howl($(this));
 		});
 	}
 }(jQuery));
