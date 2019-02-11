@@ -1,37 +1,43 @@
-## Welcome to GitHub Pages
+## Wolf Plugin - A JQuery Plugin to validate input forms in real time
 
-You can use the [editor on GitHub](https://github.com/rafaelferreti/wolf-plugin/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+#### Requirements
+Jquery >= 2.2.4
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+#### Installing Wolf
+Inside your project directory use git clone https://github.com/rafaelferreti/wolf-plugin.git
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+#### Basic Usage
+Call Wolf plugin in the page with code below
 ```
+$('form').wolf({
+  language: 'path/to/language/pt-BR.json'
+});
+```
+**Note:** configure the _path/to/language/_ based on your project struture
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+#### Application
+The Wolf plugin is used to validate: input text, select, radio and checkbox. You need to use two simple tags:
 
-### Jekyll Themes
+_data-wolf-rule_ : this tag is used for pass the rules, like as required, email, integer and more.
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/rafaelferreti/wolf-plugin/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+_data-wolf-field_ : this tag is used for pass the label name. For instance, imagine the input field name is email ```name="email"``` the error will show "The **email** is incorrect". But, you would like to show "The **e-mail** is incorret". In this case, your _data-wolf-field_ is e-mail: ```data-wolf-field="e-mail"```
 
-### Support or Contact
+#### Validate rules
+- Required - Required field.
+- min:10 - The field need to has 10 chacateres minimum. Just pass the minimum size after colon.
+- max:100 - The field need to has 100 chacateres maximun. Just pass the maximun size after colon. 
+- email - The field need to be a valid e-mail address.
+- phone - The field need to be a valid phone. the field can not have a sequence of the same number: for instance, 1111, or 2222, or 3333 and more.
+- integer - The field need to be an integer.
+- cpf - The field need to be an brazilian valid CPF.
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+If you would like to use two or more validation, just use pipe: **required|email|min:20**
+
+#### Usage examples
+The input field is required and be a valid email
+
+```<input type="email" data-wolf-rule="required|email">```
+
+The input field has minimum 10 characteres and maximum 99 characteres.
+
+```<input type="text" data-wolf-rule="min:10|max:99" data-wolf-label="my custom label">```
